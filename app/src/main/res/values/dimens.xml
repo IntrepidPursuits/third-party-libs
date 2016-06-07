@@ -1,0 +1,5 @@
+<resources>
+    <dimen name="default_padding">16dp</dimen>
+    <dimen name="lib_demo_list_item_height">60dp</dimen>
+    <dimen name="github_avatar_side">75dp</dimen>
+</resources>
