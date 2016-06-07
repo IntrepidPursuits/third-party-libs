@@ -2,6 +2,7 @@ package com.intrepid.thirdpartylibs.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,7 +14,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.intrepid.thirdpartylibs.R;
+import com.intrepid.thirdpartylibs.ThirdPartyLibsApplication;
 import com.intrepid.thirdpartylibs.adapters.GitHubReposAdapter;
+import com.intrepid.thirdpartylibs.events.ToastErrorEvent;
 import com.intrepid.thirdpartylibs.models.GitHubRepo;
 import com.intrepid.thirdpartylibs.net.ServiceManager;
 import com.squareup.picasso.Picasso;
@@ -37,6 +40,7 @@ public class GitHubReposFragment extends Fragment {
     RecyclerView reposRecyclerView;
 
     private List<GitHubRepo> repos = new ArrayList<>();
+    private GitHubReposAdapter reposAdapter;
 
     public static GitHubReposFragment newInstance() {
         return new GitHubReposFragment();
@@ -52,8 +56,8 @@ public class GitHubReposFragment extends Fragment {
         ButterKnife.bind(this, rootView);
 
         reposRecyclerView.setHasFixedSize(true);
-        setRecyclerViewLayoutManager();
-        setRecyclerViewAdapter();
+        initRecyclerViewLayoutManager();
+        initRecyclerViewAdapter();
 
         return rootView;
     }
@@ -63,19 +67,19 @@ public class GitHubReposFragment extends Fragment {
         loadRepos();
     }
 
-    private void setRecyclerViewLayoutManager() {
+    private void initRecyclerViewLayoutManager() {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         reposRecyclerView.setLayoutManager(linearLayoutManager);
     }
 
-    private void setRecyclerViewAdapter() {
-        GitHubReposAdapter adapter = new GitHubReposAdapter(getContext(), repos);
-        reposRecyclerView.setAdapter(adapter);
+    private void initRecyclerViewAdapter() {
+        reposAdapter = new GitHubReposAdapter(getContext(), repos);
+        reposRecyclerView.setAdapter(reposAdapter);
     }
 
     private void refreshUi() {
-        reposRecyclerView.getAdapter().notifyDataSetChanged();
+        reposAdapter.notifyDataSetChanged();
         if (!repos.isEmpty()) {
             avatarView.setVisibility(View.VISIBLE);
             loadOwnerAvatar(repos.get(0));
@@ -112,22 +116,28 @@ public class GitHubReposFragment extends Fragment {
         ServiceManager.GitHub.gitHubService.getRepos(username).enqueue(new Callback<List<GitHubRepo>>() {
             @Override
             public void onResponse(Call<List<GitHubRepo>> call, Response<List<GitHubRepo>> response) {
-                updateRepos(response.body());
-                refreshUi();
+                List<GitHubRepo> repos = response.body();
+                if (repos != null) {
+                    updateRepos(repos);
+                } else {
+                    showLoadReposErrorMsg(response.message());
+                }
             }
 
             @Override
             public void onFailure(Call<List<GitHubRepo>> call, Throwable t) {
-                updateRepos(null);
-                refreshUi();
+                showLoadReposErrorMsg(t.getMessage());
             }
         });
     }
 
-    private void updateRepos(List<GitHubRepo> repos) {
+    private void updateRepos(@NonNull List<GitHubRepo> repos) {
         this.repos.clear();
-        if (repos != null) {
-            this.repos.addAll(repos);
-        }
+        this.repos.addAll(repos);
+        refreshUi();
+    }
+
+    private void showLoadReposErrorMsg(String errorMsg) {
+        ThirdPartyLibsApplication.bus.post(new ToastErrorEvent(errorMsg));
     }
 }

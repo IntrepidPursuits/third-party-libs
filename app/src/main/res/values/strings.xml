@@ -3,4 +3,5 @@
     <string name="lib_demo_github">GitHub</string>
     <string name="github_show_repos_prompt">Show my repositories</string>
     <string name="github_repo_created_at">Created on %s</string>
+    <string name="error_msg_get_repos_failure">Failure loading repositories</string>
 </resources>
