@@ -12,12 +12,15 @@ import com.intrepid.thirdpartylibs.ThirdPartyLibsApplication;
 import com.intrepid.thirdpartylibs.events.GitHubRepoSelectedEvent;
 import com.intrepid.thirdpartylibs.models.GitHubRepo;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class GitHubReposAdapter extends RecyclerView.Adapter<GitHubReposAdapter.ViewHolder> {
+    private static final String DATE_FORMAT_REPO_CREATED_AT = "MMM d, yyyy";
+
     private Context context;
     private List<GitHubRepo> repos;
 
@@ -66,6 +69,13 @@ public class GitHubReposAdapter extends RecyclerView.Adapter<GitHubReposAdapter.
             this.repo = repo;
 
             repoNameView.setText(repo.getName());
+            dateCreatedView.setText(getCreatedAtText(repo));
+        }
+
+        public String getCreatedAtText(GitHubRepo repo) {
+            SimpleDateFormat createdAtDateFormat = new SimpleDateFormat(DATE_FORMAT_REPO_CREATED_AT,
+                    context.getResources().getConfiguration().locale);
+            return context.getString(R.string.github_repo_created_at, createdAtDateFormat.format(repo.getCreatedAt()));
         }
     }
 }

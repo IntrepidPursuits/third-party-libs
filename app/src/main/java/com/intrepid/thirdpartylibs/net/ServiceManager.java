@@ -24,7 +24,7 @@ public class ServiceManager {
 
     public static class GitHub {
         private static final String BASE_URL = "https://api.github.com/";
-        private static final String DATE_FORMAT = "yyyy'-'MM'-'dd HH':'mm':'ss";
+        private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
         public static GitHubService gitHubService;
 
